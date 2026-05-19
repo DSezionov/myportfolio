@@ -250,59 +250,94 @@
     if (aPage === page) a.classList.add('active');
   });
 
-  /* ─── HERO CANVAS ANIMATION ─────────────────────────────── */
+  /* ─── HERO CANVAS ANIMATION — Flowing Mesh Gradient ─────── */
   (function initHeroCanvas() {
     const canvas = document.querySelector('.hero-canvas');
     if (!canvas) return;
+
     const ctx = canvas.getContext('2d');
-    let W, H, nodes;
-    const ACCENT = 'rgba(201,184,138,';
+    let W, H, raf, t = 0;
+
+    /* Brand color stops — all kept at very low opacity (0.06–0.18)
+       so the gradient breathes without competing with the left content */
+    const STOPS = [
+      { r: 201, g: 184, b: 138 },   /* --accent  : warm gold   */
+      { r:  42, g:  42, b:  47 },   /* --border  : near-black  */
+      { r:  90, g:  90, b:  98 },   /* --muted   : grey        */
+      { r:  17, g:  17, b:  19 },   /* --surface : dark        */
+    ];
+
+    /* Orbs — each is a large radial gradient that drifts slowly */
+    const ORBS = [
+      { cx: 0.72, cy: 0.25, r: 0.55, si: 0, speed: 0.00018, amp: 0.10, phase: 0.00 },
+      { cx: 0.55, cy: 0.70, r: 0.50, si: 2, speed: 0.00024, amp: 0.08, phase: 1.80 },
+      { cx: 0.88, cy: 0.55, r: 0.45, si: 0, speed: 0.00020, amp: 0.12, phase: 3.60 },
+      { cx: 0.40, cy: 0.35, r: 0.40, si: 1, speed: 0.00016, amp: 0.09, phase: 5.10 },
+      { cx: 0.80, cy: 0.80, r: 0.48, si: 2, speed: 0.00022, amp: 0.07, phase: 2.40 },
+    ];
+
     function resize() {
       W = canvas.width  = canvas.offsetWidth;
       H = canvas.height = canvas.offsetHeight;
-      buildNodes();
     }
-    function buildNodes() {
-      const count = Math.floor((W * H) / 18000);
-      nodes = Array.from({ length: count }, () => ({
-        x: Math.random() * W, y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35,
-        r: 1 + Math.random() * 1.5, pulse: Math.random() * Math.PI * 2,
-      }));
+
+    function rgba(stop, alpha) {
+      return `rgba(${stop.r},${stop.g},${stop.b},${alpha.toFixed(3)})`;
     }
+
     function draw() {
+      t++;
       ctx.clearRect(0, 0, W, H);
-      nodes.forEach(n => {
-        n.x += n.vx; n.y += n.vy; n.pulse += 0.012;
-        if (n.x < 0) n.x = W; if (n.x > W) n.x = 0;
-        if (n.y < 0) n.y = H; if (n.y > H) n.y = 0;
-      });
-      const maxDist = 140;
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
-          const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < maxDist) {
-            const alpha = (1 - d / maxDist) * 0.12;
-            ctx.beginPath();
-            ctx.strokeStyle = ACCENT + alpha + ')';
-            ctx.lineWidth = 0.6;
-            ctx.moveTo(nodes[i].x, nodes[i].y);
-            ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.stroke();
-          }
-        }
-      }
-      nodes.forEach(n => {
-        const pulse = 0.5 + 0.5 * Math.sin(n.pulse);
+
+      /* Composite mode: 'screen' makes overlapping orbs blend softly
+         without producing harsh bright spots */
+      ctx.globalCompositeOperation = 'screen';
+
+      ORBS.forEach(orb => {
+        /* Lissajous-style drift — each orb moves on its own slow ellipse */
+        const driftX = Math.sin(t * orb.speed * 1.3 + orb.phase) * orb.amp;
+        const driftY = Math.cos(t * orb.speed       + orb.phase) * orb.amp * 0.7;
+
+        const cx = (orb.cx + driftX) * W;
+        const cy = (orb.cy + driftY) * H;
+        const r  =  orb.r * Math.max(W, H);
+
+        const stop = STOPS[orb.si];
+
+        /* Breathing: opacity pulses gently between min and max */
+        const breath = 0.5 + 0.5 * Math.sin(t * orb.speed * 60 + orb.phase);
+        const alphaCenter = 0.07 + breath * 0.06;   /* 0.07 – 0.13  */
+        const alphaEdge   = 0.0;
+
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        grad.addColorStop(0.00, rgba(stop, alphaCenter));
+        grad.addColorStop(0.45, rgba(stop, alphaCenter * 0.5));
+        grad.addColorStop(1.00, rgba(stop, alphaEdge));
+
         ctx.beginPath();
-        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-        ctx.fillStyle = ACCENT + (0.08 + pulse * 0.12) + ')';
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
         ctx.fill();
       });
-      requestAnimationFrame(draw);
+
+      /* Reset composite mode */
+      ctx.globalCompositeOperation = 'source-over';
+
+      /* Subtle vignette — darkens the very edges so the gradient
+         feels contained and doesn't bleed into the text column */
+      const vignette = ctx.createRadialGradient(
+        W * 0.65, H * 0.5, H * 0.1,
+        W * 0.65, H * 0.5, H * 1.1
+      );
+      vignette.addColorStop(0.0, 'rgba(9,9,10,0.00)');
+      vignette.addColorStop(1.0, 'rgba(9,9,10,0.55)');
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, 0, W, H);
+
+      raf = requestAnimationFrame(draw);
     }
-    const ro = new ResizeObserver(() => resize());
+
+    const ro = new ResizeObserver(resize);
     ro.observe(canvas);
     resize();
     draw();
