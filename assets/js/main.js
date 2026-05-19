@@ -256,18 +256,15 @@
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    let W, H, raf, t = 0;
+    let W, H, t = 0;
 
-    /* Brand color stops — all kept at very low opacity (0.06–0.18)
-       so the gradient breathes without competing with the left content */
     const STOPS = [
-      { r: 201, g: 184, b: 138 },   /* --accent  : warm gold   */
-      { r:  42, g:  42, b:  47 },   /* --border  : near-black  */
-      { r:  90, g:  90, b:  98 },   /* --muted   : grey        */
-      { r:  17, g:  17, b:  19 },   /* --surface : dark        */
+      { r: 201, g: 184, b: 138 },
+      { r:  42, g:  42, b:  47 },
+      { r:  90, g:  90, b:  98 },
+      { r:  17, g:  17, b:  19 },
     ];
 
-    /* Orbs — each is a large radial gradient that drifts slowly */
     const ORBS = [
       { cx: 0.72, cy: 0.25, r: 0.55, si: 0, speed: 0.00018, amp: 0.10, phase: 0.00 },
       { cx: 0.55, cy: 0.70, r: 0.50, si: 2, speed: 0.00024, amp: 0.08, phase: 1.80 },
@@ -288,31 +285,22 @@
     function draw() {
       t++;
       ctx.clearRect(0, 0, W, H);
-
-      /* Composite mode: 'screen' makes overlapping orbs blend softly
-         without producing harsh bright spots */
       ctx.globalCompositeOperation = 'screen';
 
       ORBS.forEach(orb => {
-        /* Lissajous-style drift — each orb moves on its own slow ellipse */
         const driftX = Math.sin(t * orb.speed * 1.3 + orb.phase) * orb.amp;
         const driftY = Math.cos(t * orb.speed       + orb.phase) * orb.amp * 0.7;
-
         const cx = (orb.cx + driftX) * W;
         const cy = (orb.cy + driftY) * H;
         const r  =  orb.r * Math.max(W, H);
-
         const stop = STOPS[orb.si];
-
-        /* Breathing: opacity pulses gently between min and max */
         const breath = 0.5 + 0.5 * Math.sin(t * orb.speed * 60 + orb.phase);
-        const alphaCenter = 0.07 + breath * 0.06;   /* 0.07 – 0.13  */
-        const alphaEdge   = 0.0;
+        const alphaCenter = 0.07 + breath * 0.06;
 
         const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
         grad.addColorStop(0.00, rgba(stop, alphaCenter));
         grad.addColorStop(0.45, rgba(stop, alphaCenter * 0.5));
-        grad.addColorStop(1.00, rgba(stop, alphaEdge));
+        grad.addColorStop(1.00, rgba(stop, 0));
 
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
@@ -320,11 +308,8 @@
         ctx.fill();
       });
 
-      /* Reset composite mode */
       ctx.globalCompositeOperation = 'source-over';
 
-      /* Subtle vignette — darkens the very edges so the gradient
-         feels contained and doesn't bleed into the text column */
       const vignette = ctx.createRadialGradient(
         W * 0.65, H * 0.5, H * 0.1,
         W * 0.65, H * 0.5, H * 1.1
@@ -334,7 +319,7 @@
       ctx.fillStyle = vignette;
       ctx.fillRect(0, 0, W, H);
 
-      raf = requestAnimationFrame(draw);
+      requestAnimationFrame(draw);
     }
 
     const ro = new ResizeObserver(resize);
