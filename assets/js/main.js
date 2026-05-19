@@ -250,4 +250,62 @@
     if (aPage === page) a.classList.add('active');
   });
 
+  /* ─── HERO CANVAS ANIMATION ─────────────────────────────── */
+  (function initHeroCanvas() {
+    const canvas = document.querySelector('.hero-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W, H, nodes;
+    const ACCENT = 'rgba(201,184,138,';
+    function resize() {
+      W = canvas.width  = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+      buildNodes();
+    }
+    function buildNodes() {
+      const count = Math.floor((W * H) / 18000);
+      nodes = Array.from({ length: count }, () => ({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35,
+        r: 1 + Math.random() * 1.5, pulse: Math.random() * Math.PI * 2,
+      }));
+    }
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      nodes.forEach(n => {
+        n.x += n.vx; n.y += n.vy; n.pulse += 0.012;
+        if (n.x < 0) n.x = W; if (n.x > W) n.x = 0;
+        if (n.y < 0) n.y = H; if (n.y > H) n.y = 0;
+      });
+      const maxDist = 140;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < maxDist) {
+            const alpha = (1 - d / maxDist) * 0.12;
+            ctx.beginPath();
+            ctx.strokeStyle = ACCENT + alpha + ')';
+            ctx.lineWidth = 0.6;
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(n => {
+        const pulse = 0.5 + 0.5 * Math.sin(n.pulse);
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.fillStyle = ACCENT + (0.08 + pulse * 0.12) + ')';
+        ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    }
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(canvas);
+    resize();
+    draw();
+  })();
+
 })();
