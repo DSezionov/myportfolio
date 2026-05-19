@@ -6,11 +6,36 @@ A dark, editorial brand & UI/UX design portfolio. Built in pure HTML/CSS/JS, rea
 
 ## 🚀 Quick Deploy to GitHub Pages
 
-1. Unzip this folder
-2. Create a new GitHub repository (e.g. `username.github.io` for a root site, or `portfolio`)
-3. Upload all files to the repo (or `git push`)
+### ⚠️ IMPORTANT: Upload files, NOT the folder
+
+When you unzip, you'll see these files directly (no wrapping folder):
+```
+index.html
+work.html
+about.html
+assets/
+...
+```
+
+**Upload THESE files to the root of your GitHub repo.** Do NOT create a `portfolio/` subfolder inside the repo — that will break the CSS.
+
+### Steps:
+1. Unzip the archive
+2. Open your GitHub repo (`dsezionov/myportfolio`)
+3. Drag-and-drop **all files and the `assets/` folder** directly into the repo root
+   — OR use `git`: `cd` into the unzipped folder, then `git init`, `git add .`, `git push`
 4. Go to **Settings → Pages → Source → Deploy from branch → main → / (root)**
-5. Your site will be live at `https://username.github.io` (or `/portfolio`)
+5. Wait ~60 seconds → your site is live at `https://dsezionov.github.io/myportfolio/`
+
+### Via terminal (fastest):
+```bash
+cd path/to/unzipped/folder   # index.html should be HERE
+git init
+git remote add origin https://github.com/dsezionov/myportfolio.git
+git add .
+git commit -m "Portfolio launch"
+git push -u origin main
+```
 
 ---
 
