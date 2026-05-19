@@ -687,6 +687,80 @@ main { padding-top: var(--nav-h); }
 .exp-company { color: var(--text3); font-size: 0.875rem; margin-top: 4px; }
 .exp-period { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; white-space: nowrap; }
 
+/* ===== EXPERIENCE TABLE ===== */
+.xp-board {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.xp-group { border-bottom: 1px solid var(--border); }
+.xp-group:last-child { border-bottom: none; }
+.xp-company-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.75rem 2rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.xp-company-name {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.xp-company-loc {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.xp-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  border-bottom: 1px solid var(--border);
+}
+.xp-row:last-child { border-bottom: none; }
+.xp-left {
+  padding: 1.75rem 2rem;
+  border-right: 1px solid var(--border);
+}
+.xp-right { padding: 1.75rem 2rem; }
+.xp-date {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.xp-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.xp-type {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.xp-right p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.75;
+}
+@media (max-width: 640px) {
+  .xp-company-bar { padding: 0.75rem 1.25rem; flex-direction: column; gap: 0.2rem; }
+  .xp-row { grid-template-columns: 1fr; }
+  .xp-left { padding: 1.25rem 1.25rem 1rem; border-right: none; border-bottom: 1px solid var(--border); }
+  .xp-right { padding: 1rem 1.25rem 1.25rem; }
+}
+
 /* ===== SERVICES ===== */
 .services-grid {
   display: grid;
